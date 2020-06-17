@@ -5,31 +5,31 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-    @Database(entities = [Reminder::class], version = 1, exportSchema = false) //tells that this is a room database, tells that we want to store Reminder entities
-    abstract class ReminderRoomDatabase : RoomDatabase() {
+@Database(entities = [Reminder::class], version = 1, exportSchema = false)
+abstract class ReminderRoomDatabase : RoomDatabase() {
+    abstract fun reminderDao(): ReminderDao
 
-        abstract fun reminderDao(): ReminderDao
+    companion object {
+        private const val DB_NAME = "reminderDB"
 
-        companion object {
-            private const val DATABASE_NAME = "REMINDER_DATABASE"
+        @Volatile
+        private var reminderRoomDatabase : ReminderRoomDatabase? = null
 
-            @Volatile
-            private var reminderRoomDatabaseInstance: ReminderRoomDatabase? = null
+        fun getReminderRoomDatabase(context: Context) : ReminderRoomDatabase? {
+            if(reminderRoomDatabase != null) return reminderRoomDatabase
 
-            fun getDatabase(context: Context): ReminderRoomDatabase? {
-                if (reminderRoomDatabaseInstance == null) {
-                    synchronized(ReminderRoomDatabase::class.java) {
-                        if (reminderRoomDatabaseInstance == null) {
-                            reminderRoomDatabaseInstance = Room.databaseBuilder(
-                                    context.applicationContext,
-                                    ReminderRoomDatabase::class.java, DATABASE_NAME
-                                )
-                                .build()
-                        }
-                    }
+            synchronized(ReminderRoomDatabase::class.java) {
+                if(reminderRoomDatabase == null) {
+                    reminderRoomDatabase = Room.databaseBuilder(
+                            context.applicationContext,
+                            ReminderRoomDatabase::class.java, DB_NAME
+                        )
+                        .build()
+
                 }
-                return reminderRoomDatabaseInstance
             }
-        }
 
+            return reminderRoomDatabase
+        }
     }
+}
